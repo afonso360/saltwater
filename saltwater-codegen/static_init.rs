@@ -4,7 +4,7 @@
 use std::convert::{TryFrom, TryInto};
 
 use cranelift::codegen::ir::types;
-use cranelift_module::{Backend, DataContext, DataId, Linkage};
+use cranelift_module::{DataContext, DataId, Linkage, Module};
 
 use super::{Compiler, Id};
 use saltwater_parser::arch::{PTR_SIZE, TARGET};
@@ -45,7 +45,7 @@ macro_rules! bytes {
     }};
 }
 
-impl<B: Backend> Compiler<B> {
+impl<M: Module> Compiler<M> {
     pub(super) fn store_static(
         &mut self,
         symbol: Symbol,
@@ -65,10 +65,10 @@ impl<B: Backend> Compiler<B> {
             .ctype
             .alignof()
             .map_err(|err| err.to_string())
-            .and_then(|size| {
-                size.try_into()
-                    .map_err(|_| format!("align of {} is greater than 256 bytes", metadata.id))
-            })
+            // .and_then(|size| {
+            //     // size.try_into()
+            //     //     .map_err(|_| format!("align of {} is greater than 256 bytes", metadata.id))
+            // })
             .map_err(err_closure)?;
         if align == 0 {
             // struct that was declared but never used
@@ -82,7 +82,6 @@ impl<B: Backend> Compiler<B> {
                 linkage,
                 !metadata.qualifiers.c_const,
                 false,
-                Some(align),
             )
             .map_err(|err| Locatable {
                 data: format!("error storing static value: {}", err),
@@ -152,7 +151,7 @@ impl<B: Backend> Compiler<B> {
                 let name = format!("str.{}", len);
                 let id = match self
                     .module
-                    .declare_data(&name, Linkage::Local, false, false, None)
+                    .declare_data(&name, Linkage::Local, false, false)
                 {
                     Ok(id) => id,
                     Err(err) => {

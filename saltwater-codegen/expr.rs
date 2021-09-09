@@ -1,6 +1,6 @@
 use cranelift::codegen::ir::{condcodes, types, MemFlags};
 use cranelift::prelude::{FunctionBuilder, InstBuilder, Type as IrType, Value as IrValue};
-use cranelift_module::Backend;
+use cranelift_module::Module;
 
 use super::{Compiler, Id};
 use saltwater_parser::data::{
@@ -23,7 +23,7 @@ enum FuncCall {
     Indirect(Value),
 }
 
-impl<B: Backend> Compiler<B> {
+impl<M: Module> Compiler<M> {
     // clippy doesn't like big match statements, but this is kind of essential complexity,
     // it can't be any smaller without supporting fewer features
     #[allow(clippy::cognitive_complexity)]
@@ -487,6 +487,8 @@ impl<B: Backend> Compiler<B> {
                 align,
                 // could be overlapping: `s = s;`
                 false,
+                // We don't know anything about this access
+                MemFlags::new()
             );
             return Ok(value);
         }
@@ -504,7 +506,7 @@ impl<B: Backend> Compiler<B> {
         args: Vec<Expr>,
         builder: &mut FunctionBuilder,
     ) -> IrResult {
-        use cranelift::codegen::ir::{AbiParam, ArgumentPurpose};
+        use cranelift::codegen::ir::AbiParam;
         use hir::Qualifiers;
 
         let mut ftype = match ctype {
@@ -514,8 +516,8 @@ impl<B: Backend> Compiler<B> {
         let mut float_variadic = 0;
         if ftype.varargs {
             // needs to be done before we move the args by compiling them
-            if self.module.isa().name() != "x86" {
-                unimplemented!("variadic args for architectures other than x86");
+            if self.module.isa().name() != "x64" {
+                unimplemented!("variadic args for architectures other than x64");
             }
             // this is an utter hack
             // https://github.com/CraneStation/cranelift/issues/212#issuecomment-549111736
@@ -553,19 +555,19 @@ impl<B: Backend> Compiler<B> {
                 // stolen from https://github.com/bjorn3/rustc_codegen_cranelift/blob/82fde5b62281fa51a/src/abi/mod.rs#L535
                 if ftype.varargs {
                     let call_sig = builder.func.dfg.call_signature(call).unwrap();
-                    let al = self
-                        .module
-                        .isa()
-                        .register_info()
-                        .parse_regunit("rax")
-                        .expect("x86 should have an rax register");
-                    let float_arg = AbiParam::special_reg(types::I8, ArgumentPurpose::Normal, al);
+                    // let float_arg = AbiParam::special_reg(types::I8, ArgumentPurpose::Normal, al);
                     // NOTE: this is added both here and in signature() because we overwrite the previous params
                     let abi_params = ftype
                         .params
                         .into_iter()
-                        .map(|param| AbiParam::new(param.get().ctype.as_ir_type()))
-                        .chain(std::iter::once(float_arg))
+                        .map(|param| {
+                            let ctype = &param.get().ctype;
+                            // if ctype.is_floating() {
+                            //     panic!("Non int ty {:?} for variadic call", ctype);
+                            // }
+                            AbiParam::new(ctype.as_ir_type())
+                        })
+                        .chain(std::iter::once(AbiParam::new(types::I8)))
                         .collect();
                     builder.func.dfg.signatures[call_sig].params = abi_params;
                 }

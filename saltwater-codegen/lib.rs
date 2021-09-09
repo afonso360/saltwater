@@ -31,8 +31,8 @@ use cranelift::codegen::{
 };
 use cranelift::frontend::Switch;
 use cranelift::prelude::{Block, FunctionBuilder, FunctionBuilderContext};
-use cranelift_module::{self, Backend, DataId, FuncId, Linkage, Module};
-use cranelift_object::{ObjectBackend, ObjectBuilder};
+use cranelift_module::{self, DataId, FuncId, Linkage, Module};
+use cranelift_object::{ObjectBuilder, ObjectModule, ObjectProduct};
 use saltwater_parser::arch::TARGET;
 use saltwater_parser::{Opt, Program};
 
@@ -65,13 +65,13 @@ pub(crate) fn get_isa(jit: bool) -> Box<dyn TargetIsa + 'static> {
         .finish(flags)
 }
 
-pub fn initialize_aot_module(name: String) -> Module<ObjectBackend> {
+pub fn initialize_aot_module(name: String) -> ObjectModule {
     let builder = ObjectBuilder::new(
         get_isa(false),
         name,
         cranelift_module::default_libcall_names(),
     );
-    Module::new(builder.expect("unsupported binary format or target architecture"))
+    ObjectModule::new(builder.expect("unsupported binary format or target architecture"))
 }
 
 enum Id {
@@ -80,8 +80,8 @@ enum Id {
     Local(StackSlot),
 }
 
-struct Compiler<T: Backend> {
-    module: Module<T>,
+struct Compiler<M: Module> {
+    module: M,
     debug: bool,
     // if false, we last saw a switch
     last_saw_loop: bool,
@@ -96,8 +96,8 @@ struct Compiler<T: Backend> {
     error_handler: ErrorHandler,
 }
 
-impl<B: Backend> Compiler<B> {
-    fn new(module: Module<B>, debug: bool) -> Compiler<B> {
+impl<M: Module> Compiler<M> {
+    fn new(module: M, debug: bool) -> Compiler<M> {
         Compiler {
             module,
             declarations: HashMap::new(),
@@ -329,9 +329,10 @@ impl<B: Backend> Compiler<B> {
 
         let mut ctx = codegen::Context::for_function(func);
         let mut trap_sink = codegen::binemit::NullTrapSink {};
+        let mut stack_map_sink = codegen::binemit::NullStackMapSink {};
         if let Err(err) = self
             .module
-            .define_function(func_id, &mut ctx, &mut trap_sink)
+            .define_function(func_id, &mut ctx, &mut trap_sink, &mut stack_map_sink)
         {
             panic!(
                 "definition error: {}\nnote: while compiling {}",
@@ -343,10 +344,8 @@ impl<B: Backend> Compiler<B> {
     }
 }
 
-pub type Product = <cranelift_object::ObjectBackend as Backend>::Product;
-
 /// Compile and return the declarations and warnings.
-pub fn compile<B: Backend>(module: Module<B>, buf: &str, opt: Opt) -> Program<Module<B>> {
+pub fn compile<M: Module>(module: M, buf: &str, opt: Opt) -> Program<M> {
     use saltwater_parser::{check_semantics, vec_deque};
 
     let debug_asm = opt.debug_asm;
@@ -404,7 +403,7 @@ pub fn compile<B: Backend>(module: Module<B>, buf: &str, opt: Opt) -> Program<Mo
     }
 }
 
-pub fn assemble(product: Product, output: &Path) -> Result<(), saltwater_parser::Error> {
+pub fn assemble(product: ObjectProduct, output: &Path) -> Result<(), saltwater_parser::Error> {
     use std::fs::File;
     use std::io::{self, Write};
 

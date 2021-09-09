@@ -127,7 +127,7 @@ mod codegen_impls {
     use cranelift_codegen::ir::{
         condcodes::{FloatCC, IntCC},
         types::{self, Type as IrType},
-        AbiParam, ArgumentPurpose,
+        AbiParam,
     };
     use cranelift_codegen::isa::{CallConv, TargetIsa};
 
@@ -205,7 +205,7 @@ mod codegen_impls {
         }
 
         /// Generate the IR function signature for `self`
-        pub fn signature(&self, isa: &dyn TargetIsa) -> Signature {
+        pub fn signature(&self, _isa: &dyn TargetIsa) -> Signature {
             let mut params = if self.params.len() == 1 && self.params[0].get().ctype == Type::Void {
                 // no arguments
                 Vec::new()
@@ -216,15 +216,17 @@ mod codegen_impls {
                     .collect()
             };
             if self.varargs {
-                let al = isa
-                    .register_info()
-                    .parse_regunit("rax")
-                    .expect("x86 should have an rax register");
-                params.push(AbiParam::special_reg(
-                    types::I8,
-                    ArgumentPurpose::Normal,
-                    al,
-                ));
+                // panic!("Unsupported");
+                // let al = isa
+                //     .register_info()
+                //     .parse_regunit("rax")
+                //     .expect("x86 should have an rax register");
+                // params.push(AbiParam::special_reg(
+                //     types::I8,
+                //     ArgumentPurpose::Normal,
+                //     al,
+                // ));
+                params.push(AbiParam::new(types::I8))
             }
             let return_type = if !self.should_return() {
                 vec![]

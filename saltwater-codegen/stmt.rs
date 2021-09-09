@@ -1,7 +1,7 @@
 use cranelift::codegen::cursor::Cursor;
 use cranelift::frontend::Switch;
 use cranelift::prelude::{Block, FunctionBuilder, InstBuilder};
-use cranelift_module::Backend;
+use cranelift_module::Module;
 
 use super::Compiler;
 use saltwater_parser::data::{
@@ -9,7 +9,7 @@ use saltwater_parser::data::{
     *,
 };
 
-impl<B: Backend> Compiler<B> {
+impl<M: Module> Compiler<M> {
     pub(super) fn compile_all(
         &mut self,
         stmts: Vec<Stmt>,

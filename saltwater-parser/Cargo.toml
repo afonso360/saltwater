@@ -13,14 +13,15 @@ lazy_static = "1"
 arcstr = "0.2.2"
 hexponent = "0.3"
 thiserror = "^1.0.10"
-target-lexicon = "0.10"
 lasso = "0.2"
 codespan = { version = ">=0.9.5", default-features = false }
 counter = "0.4"
 shared_str = "0.1.1"
 time = "0.2"
-cranelift-codegen = { version = "0.66", optional = true }
-cranelift-object = { version = "0.66", optional = true }
+
+cranelift-codegen = { version = "0.76", optional = true }
+cranelift-object = { version = "0.76", optional = true }
+target-lexicon = "0.12"
 
 [dev-dependencies]
 proptest = "^0.9.6"
