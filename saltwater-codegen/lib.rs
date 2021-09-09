@@ -444,13 +444,14 @@ pub use jit::*;
 #[cfg(feature = "jit")]
 mod jit {
     use super::*;
-    use cranelift_simplejit::{SimpleJITBackend, SimpleJITBuilder};
+    use cranelift_jit::{JITBuilder, JITModule};
     use std::convert::TryFrom;
     use std::rc::Rc;
 
-    pub fn initialize_jit_module() -> Module<SimpleJITBackend> {
+    pub fn initialize_jit_module() -> JITModule {
         let libcall_names = cranelift_module::default_libcall_names();
-        Module::new(SimpleJITBuilder::with_isa(get_isa(true), libcall_names))
+        let builder = JITBuilder::with_isa(get_isa(true), libcall_names);
+        JITModule::new(builder)
     }
 
     /// Structure used to handle compiling C code to memory instead of to disk.
@@ -463,11 +464,11 @@ mod jit {
     ///
     /// [`from_string`]: #method.from_string
     pub struct JIT {
-        module: Module<SimpleJITBackend>,
+        module: JITModule,
     }
 
-    impl From<Module<SimpleJITBackend>> for JIT {
-        fn from(module: Module<SimpleJITBackend>) -> Self {
+    impl From<JITModule> for JIT {
+        fn from(module: JITModule) -> Self {
             Self { module }
         }
     }
@@ -518,7 +519,7 @@ mod jit {
             }
         }
         /// Get compiled static data. If this data doesn't exist then `None` is returned, otherwise its address and size are returned.
-        pub fn get_compiled_data(&mut self, name: &str) -> Option<(*mut u8, usize)> {
+        pub fn get_compiled_data(&mut self, name: &str) -> Option<(*const u8, usize)> {
             use cranelift_module::FuncOrDataId;
 
             let name = self.module.get_name(name);
