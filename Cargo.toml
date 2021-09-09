@@ -22,7 +22,7 @@ documentation = "https://docs.rs/saltwater"
 
 [dependencies]
 ansi_term = "0.12.1"
-arcstr = "1.0.0"
+arcstr = "1.1.0"
 tempfile = "3.2.0"
 pico-args = { version = "0.4.0", features = ["short-space-opt"] }
 color-backtrace = { version = "0.5.0", default-features = false, optional = true }

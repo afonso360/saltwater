@@ -10,12 +10,12 @@ path = "lib.rs"
 
 [dependencies]
 lazy_static = "1"
-arcstr = "0.2.2"
+arcstr = "1.1"
 hexponent = "0.3"
 thiserror = "^1.0.10"
-lasso = "0.2"
+lasso = "0.6"
 codespan = { version = ">=0.9.5", default-features = false }
-counter = "0.4"
+counter = "0.5"
 shared_str = "0.1.1"
 time = "0.2"
 
