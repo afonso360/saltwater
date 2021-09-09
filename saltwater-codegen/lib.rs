@@ -6,8 +6,8 @@ macro_rules! semantic_err {
         return Err(CompileError::semantic(Locatable {
             data: $message,
             location: $location,
-        }));
-    };
+        }))
+    }
 }
 
 mod expr;
