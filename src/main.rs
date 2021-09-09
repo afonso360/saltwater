@@ -254,9 +254,6 @@ macro_rules! type_sizes {
     };
 }
 
-#[cfg(feature = "git-testament")]
-git_testament::git_testament_macros!(version);
-
 fn parse_args() -> Result<(BinOpt, PathBuf), pico_args::Error> {
     use std::collections::HashMap;
 
@@ -269,9 +266,6 @@ fn parse_args() -> Result<(BinOpt, PathBuf), pico_args::Error> {
         std::process::exit(0);
     }
     if input.contains(["-V", "--version"]) {
-        #[cfg(feature = "git-testament")]
-        println!("{} {}", env!("CARGO_PKG_NAME"), version_testament!());
-        #[cfg(not(feature = "git-testament"))]
         println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
         std::process::exit(0);
     }
