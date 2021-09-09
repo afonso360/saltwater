@@ -326,7 +326,7 @@ impl<'a> PreProcessor<'a> {
             TARGET.architecture, TARGET.operating_system, TARGET.environment
         );
 
-        let now = time::OffsetDateTime::now_local();
+        let now = time::OffsetDateTime::now_utc();
 
         #[allow(clippy::inconsistent_digit_grouping)]
         let mut definitions = map! {
@@ -611,7 +611,7 @@ impl<'a> PreProcessor<'a> {
             Start,
             SawParen,
             SawId(InternedStr),
-        };
+        }
         use State::*;
         let mut state = Start;
         loop {
