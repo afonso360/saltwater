@@ -29,15 +29,14 @@ fn run_all() -> Result<(), io::Error> {
 }
 
 fn run_one(path: &path::Path) -> Result<(), io::Error> {
+    let path = path.to_owned();
     println!("testing {}", path.display());
-    let program = std::fs::read_to_string(path).unwrap();
-    let mut reader = io::BufReader::new(std::fs::File::open(path)?);
+    let program = std::fs::read_to_string(&path).unwrap();
+    let mut reader = io::BufReader::new(std::fs::File::open(&path)?);
     let mut first_line = String::new();
     reader.read_line(&mut first_line)?;
-    // remove trailing \n
-    first_line.pop();
-    let path = path.into();
-    let test_func = match first_line.as_str() {
+
+    let test_func = match first_line.as_str().trim() {
         // make sure the test compiles, but don't run it
         "// compile" => utils::assert_compiles,
         // the test compiles, and don't require a `main` function
@@ -49,40 +48,54 @@ fn run_one(path: &path::Path) -> Result<(), io::Error> {
         // it should compile successfully then crash at runtime
         "// crash" => utils::assert_crash,
         // tests can only be ignored if they have an issue open on github
-        "// ignore" => panic!("ignored tests should have an associated issue"),
-        line => {
-            // `code: x` - it should compile, run, and exit with code x
-            // NOTE: x should not be negative
-            // NOTE: x should be less than 256 since Linux only has 8-bit exit codes
-            if line.starts_with("// code: ") {
-                let code = line["// code: ".len()..]
-                    .parse()
-                    .expect("tests should have an integer after code:");
-                utils::assert_code(&program, path, code);
-                return Ok(());
-            // `errors: x` - it should not compile and rcc should output `x` errors
-            } else if line.starts_with("// errors: ") {
-                let errors = line["// errors: ".len()..]
-                    .parse()
-                    .expect("tests should have an integer after code:");
-                utils::assert_num_errs(&program, path, errors);
-                return Ok(());
-            } else if line.starts_with("// ignore: ") {
-                let url = &line["// ignore: ".len()..];
-                assert!(
-                    url.starts_with("https://") || url.starts_with("http://"),
-                    "ignored tests should have an associated issue"
-                );
-                return Ok(());
-            // `output: x` - it should run and output `x`
-            // this has a convoluted syntax for multiline strings, see `output_test`
-            } else if line.starts_with("// output: ") {
-                return output_test(&line["// output: ".len()..], &mut reader, &program, path);
-            } else {
-                // seems like a reasonable default
-                utils::assert_succeeds
-            }
+        "// ignore" => {
+            // let p: String = path;
+            println!("WARNING: Ignored test {}", path.to_str().unwrap());
+            // panic!("ignored tests should have an associated issue")
+            return Ok(())
+        },
+        // `code: x` - it should compile, run, and exit with code x
+        // NOTE: x should not be negative
+        // NOTE: x should be less than 256 since Linux only has 8-bit exit codes
+        line if line.starts_with("// code: ") => {
+            let code = line
+                .trim_start_matches("// code: ")
+                .trim()
+                .parse()
+                .expect("tests should have an integer after code:");
+            utils::assert_code(&program, path, code);
+            return Ok(());
         }
+        // `errors: x` - it should not compile and rcc should output `x` errors
+        line if line.starts_with("// errors: ") => {
+            let errors = line
+                .trim_start_matches("// errors: ")
+                .trim()
+                .parse()
+                .expect("tests should have an integer after errors:");
+            utils::assert_num_errs(&program, path, errors);
+            return Ok(());
+        }
+        line if line.starts_with("// ignore: ") => {
+            let url = line
+                .trim_start_matches("// ignore: ")
+                .trim();
+            assert!(
+                url.starts_with("https://") || url.starts_with("http://"),
+                "ignored tests should have an associated issue"
+            );
+            return Ok(());
+        }
+        // `output: x` - it should run and output `x`
+        // this has a convoluted syntax for multiline strings, see `output_test`
+        line if line.starts_with("// output: ") => {
+            // let output = line
+            //     .trim_start_matches("// output: ")
+            //     .trim();
+            return output_test(&line["// output: ".len()..], &mut reader, &program, path);
+
+        }
+        line => panic!("Unrecognized test: {}", line),
     };
 
     test_func(&program, path);

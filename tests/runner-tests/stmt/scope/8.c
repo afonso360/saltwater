@@ -1,4 +1,4 @@
-// compiles
+// ignore
 struct s;
 struct s;
 int main() {

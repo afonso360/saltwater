@@ -1,3 +1,4 @@
+// succeeds
 #if 1
 int main() {}
 #if 0

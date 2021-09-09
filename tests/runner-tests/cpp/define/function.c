@@ -1,4 +1,4 @@
-// success
+// succeeds
 #define f(a) b
 int main() {
     int b = 0;

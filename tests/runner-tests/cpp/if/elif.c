@@ -1,3 +1,4 @@
+// succeeds
 #if 0
 syntax error
 #elif 1

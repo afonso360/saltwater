@@ -373,7 +373,6 @@ fn parse_args() -> Result<(BinOpt, PathBuf), pico_args::Error> {
             // so we have to parse it last.
             filename: input
                 .free_from_fn(str_to_path_buf)?
-                .unwrap_or_else(|| "-".into()),
         },
         color: color_choice,
     };

@@ -1,4 +1,4 @@
-// success
+// succeeds
 // start -> consume_if -> elif -> consume_all -> end
 #if 0
 syntax error 1
