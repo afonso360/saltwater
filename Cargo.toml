@@ -28,8 +28,6 @@ pico-args = { version = "0.4.0", features = ["short-space-opt"] }
 color-backtrace = { version = "0.5.0", default-features = false, optional = true }
 atty = { version = "0.2.14", default-features = false }
 git-testament = { version = "0.1.9", optional = true }
-rand = { version = "0.8.3", optional = true }
-rodio = { version = "0.13.1", optional = true }
 saltwater-parser = { path = "saltwater-parser", version = "0.11.0" }
 saltwater-codegen = { path = "saltwater-codegen", version = "0.11.0" }
 
@@ -41,7 +39,6 @@ walkdir = "2.3.2"
 
 [features]
 default = ["color-backtrace"]
-salty = ["rand", "rodio"]
 jit = ["saltwater-codegen/jit"]
 # for internal use
 _test_headers = []
