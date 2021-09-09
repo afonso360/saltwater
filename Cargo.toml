@@ -53,10 +53,6 @@ name = "examples"
 harness = false
 required-features = ["jit"]
 
-[[bench]]
-name = "parens"
-harness = false
-
 [[test]]
 name = "jit"
 required-features = ["jit"]
