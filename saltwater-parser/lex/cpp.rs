@@ -24,6 +24,7 @@
 //! This is the file for the `PreProcessor`.
 
 use lazy_static::lazy_static;
+use time::format_description;
 
 use arcstr::{ArcStr, Substr};
 use std::borrow::Cow;
@@ -327,6 +328,8 @@ impl<'a> PreProcessor<'a> {
         );
 
         let now = time::OffsetDateTime::now_utc();
+        let date_fmt = format_description::parse("%b %_d %Y").unwrap();
+        let time_fmt = format_description::parse("%H:%M:%S").unwrap();
 
         #[allow(clippy::inconsistent_digit_grouping)]
         let mut definitions = map! {
@@ -339,8 +342,8 @@ impl<'a> PreProcessor<'a> {
             "__STDC_NO_COMPLEX__".into() => int_def(1),
             "__STDC_NO_THREADS__".into() => int_def(1),
             "__STDC_NO_VLA__".into() => int_def(1),
-            "__DATE__".into() => str_def(&now.format("%b %_d %Y")),
-            "__TIME__".into() => str_def(&now.format("%H:%M:%S")),
+            "__DATE__".into() => str_def(&now.format(&date_fmt).expect("Failed to format __DATE__")),
+            "__TIME__".into() => str_def(&now.format(&time_fmt).expect("Failed to format __TIME__")),
         };
         definitions.extend(user_definitions);
         let mut search_path = vec![
@@ -1909,9 +1912,11 @@ h",
         use time::OffsetDateTime;
         fn assert_same_datetime(src: &str, cpp_src: &str, datetime: OffsetDateTime) {
             let mut preprocessor = PreProcessorBuilder::new(src).build();
+            let date_fmt = format_description::parse("%b %_d %Y").unwrap();
+            let time_fmt = format_description::parse("%H:%M:%S").unwrap();
             preprocessor.definitions.extend(map! {
-                "__DATE__".into() => str_def(&datetime.format("%b %_d %Y")),
-                "__TIME__".into() => str_def(&datetime.format("%H:%M:%S")),
+                "__DATE__".into() => str_def(&datetime.format(&date_fmt).unwrap()),
+                "__TIME__".into() => str_def(&datetime.format(&time_fmt).unwrap()),
             });
             assert!(
                 is_same_preprocessed(preprocessor, cpp(cpp_src)),
@@ -1931,12 +1936,12 @@ h",
         assert_same_datetime(
             "__DATE__|__TIME__",
             "\"Jan  1 1970\"|\"00:00:00\"",
-            OffsetDateTime::unix_epoch(),
+            OffsetDateTime::UNIX_EPOCH,
         );
         assert_same_datetime(
             "__DATE__|__TIME__",
             "\"Aug 16 2020\"|\"14:58:36\"",
-            OffsetDateTime::from_unix_timestamp(1_597_589_916),
+            OffsetDateTime::from_unix_timestamp(1_597_589_916).unwrap(),
         );
 
         // Assert current date and time work (without checking value)
