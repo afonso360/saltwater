@@ -58,7 +58,7 @@ name = "jit"
 required-features = ["jit"]
 
 [[test]]
-name = "runner"
+name = "runtests"
 
 [[test]]
 name = "varargs"
