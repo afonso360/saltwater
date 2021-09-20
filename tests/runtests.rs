@@ -9,7 +9,6 @@ include!(concat!(env!("OUT_DIR"), "/runtests_tests.rs"));
 
 fn run_test(path: &str) -> Result<(), io::Error> {
     let path = Path::new(path);
-    let _ = env_logger::try_init();
 
     let path = path.to_owned();
     println!("testing {}", path.display());

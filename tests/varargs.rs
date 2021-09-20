@@ -1,8 +1,5 @@
 mod utils;
 
-extern crate env_logger;
-extern crate log;
-
 fn printf(args: &[&str], expected: &str) {
     let program = format!(
         "
@@ -16,7 +13,6 @@ fn printf(args: &[&str], expected: &str) {
 }
 
 fn printf_helper(format: &str, args: &[&str]) {
-    use log::info;
     use std::process::Command;
 
     let mut replaced = vec![];
@@ -35,7 +31,7 @@ fn printf_helper(format: &str, args: &[&str]) {
         .env("LC_ALL", "C")
         .output()
         .expect("printf is not installed or syntax is incorrect");
-    info!(
+    println!(
         "system printf thinks {:?} should be {:?}",
         all_args, expected
     );
@@ -53,14 +49,12 @@ fn printf_helper(format: &str, args: &[&str]) {
 
 #[test]
 fn literals() {
-    let _ = env_logger::builder().is_test(true).try_init();
     printf_helper(r"hello world\n", &[]);
     printf_helper("goodbye world", &[]);
 }
 
 #[test]
 fn ints() {
-    let _ = env_logger::builder().is_test(true).try_init();
     printf_helper(r"exit_success: %d\n", &["5"]);
     //printf_helper(r"exit_success: %ld\n", &["5000000l"]);
     printf_helper(r"exit_success: %c\n", &["'a'"]);

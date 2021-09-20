@@ -1,19 +1,12 @@
 #![allow(dead_code)]
 
-use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
-
-extern crate env_logger;
-extern crate log;
 extern crate tempfile;
 
-use log::info;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
 use saltwater_codegen::{assemble, initialize_aot_module, link};
 use saltwater_parser::{Error, Opt};
 
-pub fn init() {
-    env_logger::builder().is_test(true).init();
-}
 
 pub fn cpp() -> std::process::Command {
     let mut cpp = std::process::Command::new("cpp");
@@ -37,7 +30,7 @@ pub fn cpp() -> std::process::Command {
 pub fn compile_and_run(program: &str, path: PathBuf, args: &[&str]) -> Result<Output, Error> {
     let output = compile(program, path, false)
         .unwrap_or_else(|err| panic!("failed to compile program '{}': {}", program, err));
-    info!("running file {:?}", output);
+    println!("running file {:?}", output);
     run(&output, args).map_err(Error::IO)
 }
 
@@ -57,12 +50,12 @@ pub fn compile(
     let output = tempfile::NamedTempFile::new()
         .expect("cannot create tempfile")
         .into_temp_path();
-    info!("output is {:?}", output);
+    println!("output is {:?}", output);
     if !no_link {
         let tmp_file = tempfile::NamedTempFile::new()
             .expect("cannot create tempfile")
             .into_temp_path();
-        info!("tmp_file is {:?}", tmp_file);
+        println!("tmp_file is {:?}", tmp_file);
         assemble(module, &tmp_file)?;
         link(&tmp_file, &output)?;
     } else {
@@ -105,7 +98,7 @@ pub fn assert_compile_error(program: &str, path: PathBuf) {
 
 pub fn assert_crash(program: &str, path: PathBuf) {
     let output = compile(program, path, false).expect("could not compile program");
-    log::debug!("running compiled program at {:?}", output);
+    println!("running compiled program at {:?}", output);
     let path: &Path = output.as_ref();
     let mut handle = Command::new(path)
         .spawn()
@@ -121,8 +114,7 @@ pub fn assert_crash(program: &str, path: PathBuf) {
     }
     #[cfg(not(unix))]
     {
-        use log::warn;
-        warn!("testing for segfaults is not supported on non-unix platforms, this just checks the return code is non-zero");
+        println!("testing for segfaults is not supported on non-unix platforms, this just checks the return code is non-zero");
         assert!(!handle.wait().unwrap().success());
     }
 }
