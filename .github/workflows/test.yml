@@ -1,7 +1,12 @@
+name: Run tests
 on: [push, pull_request]
 
-name: Run tests
 
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  RUSTUP_MAX_RETRIES: 10
+  CI: 1
 
 # Cancel any in-flight jobs for the same PR/branch so there's only one active
 # at a time
@@ -17,6 +22,9 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 20
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -24,6 +32,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+
+      - uses: Swatinem/rust-cache@v1
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
