@@ -34,7 +34,6 @@ saltwater-codegen = { path = "saltwater-codegen", version = "0.11.0" }
 env_logger = { version = "0.8.3", default-features = false }
 log = "0.4.14"
 criterion = "0.3.4"
-walkdir = "2.3.2"
 
 [features]
 default = ["color-backtrace"]
