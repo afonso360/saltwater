@@ -79,14 +79,10 @@ fn build_test(
     let path = path.as_ref();
     let testname = extract_name(path);
 
+
     writeln!(out, "#[test]").unwrap();
     writeln!(out, "fn r#{}() {{", &testname).unwrap();
-    // writeln!(out, "    let _ = env_logger::try_init();").unwrap();
-    writeln!(
-        out,
-        "    crate::run_test(r#\"{}\"#).unwrap();",
-        path.display(),
-    ).unwrap();
+    writeln!(out,"    crate::run_test(r#\"{}\"#).unwrap();", path.display()).unwrap();
     writeln!(out, "}}").unwrap();
     writeln!(out).unwrap();
 }

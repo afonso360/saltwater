@@ -172,3 +172,14 @@ pub fn assert_num_errs<S: AsRef<str>>(program: S, path: PathBuf, n: usize) {
         _ => panic!("program should have an error"),
     }
 }
+
+
+pub fn assert_stack_overflow(_program: &str, path: PathBuf) {
+    // We have to call the compiler as an external program since we can't catch stack overflows
+    let target = std::env::var("CARGO_TARGET_DIR").unwrap_or("target".into());
+    let status = Command::new(format!("{}/debug/swcc", target))
+        .arg(&path)
+        .status()
+        .unwrap();
+    assert_eq!(status.code(), Some(102));
+}
