@@ -173,6 +173,7 @@ impl<M: Module> Compiler<M> {
             })?;
         Ok(str_id)
     }
+
     fn init_expr(
         &mut self,
         ctx: &mut DataContext,
@@ -220,6 +221,7 @@ impl<M: Module> Compiler<M> {
         }
         Ok(())
     }
+
     fn static_ref(&self, symbol: Symbol, member_offset: i64, offset: u32, ctx: &mut DataContext) {
         match self.declarations.get(&symbol) {
             Some(Id::Function(func_id)) => {
@@ -235,6 +237,7 @@ impl<M: Module> Compiler<M> {
             None => unreachable!("parser should catch undeclared variables"),
         }
     }
+
     fn init_symbol(
         &mut self,
         ctx: &mut DataContext,
@@ -306,6 +309,7 @@ impl<M: Module> Compiler<M> {
             }
         }
     }
+
     fn init_array(
         &mut self,
         ctx: &mut DataContext,

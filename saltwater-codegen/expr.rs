@@ -143,6 +143,7 @@ impl<M: Module> Compiler<M> {
             }
         }
     }
+
     fn ternary(
         &mut self,
         condition: Expr,
@@ -174,6 +175,7 @@ impl<M: Module> Compiler<M> {
             ctype: left_val.ctype,
         })
     }
+
     fn logical_expr(
         &mut self,
         left: Expr,
@@ -206,6 +208,7 @@ impl<M: Module> Compiler<M> {
             ctype: Type::Bool,
         })
     }
+
     fn compile_literal(
         &mut self,
         ir_type: IrType,
@@ -235,6 +238,7 @@ impl<M: Module> Compiler<M> {
             ctype,
         })
     }
+
     fn unary_op<F>(&mut self, expr: Expr, builder: &mut FunctionBuilder, func: F) -> IrResult
     where
         F: FnOnce(IrValue, IrType, &Type, &mut FunctionBuilder) -> IrValue,
@@ -263,6 +267,7 @@ impl<M: Module> Compiler<M> {
         );
         Self::binary_assign_ir(left, right, ctype, op, builder)
     }
+
     fn binary_assign_ir(
         left: Value,
         right: Value,
@@ -311,6 +316,7 @@ impl<M: Module> Compiler<M> {
             ctype,
         })
     }
+
     fn cast(&mut self, expr: Expr, ctype: Type, builder: &mut FunctionBuilder) -> IrResult {
         // calculate this here before it's moved to `compile_expr`
         let orig_signed = expr.ctype.is_signed();
@@ -334,6 +340,7 @@ impl<M: Module> Compiler<M> {
             ctype,
         })
     }
+
     fn cast_ir(
         from: IrType,
         to: IrType,
@@ -404,6 +411,7 @@ impl<M: Module> Compiler<M> {
             _ => unreachable!("cast from {} to {}", from, to),
         }
     }
+
     fn negate(&mut self, expr: Expr, builder: &mut FunctionBuilder) -> IrResult {
         self.unary_op(expr, builder, |ir_val, ir_type, _, builder| match ir_type {
             i if i.is_int() => builder.ins().irsub_imm(ir_val, 0),
@@ -411,6 +419,7 @@ impl<M: Module> Compiler<M> {
             _ => unreachable!("parser should catch illegal types"),
         })
     }
+
     fn load_addr(&mut self, var: Symbol, builder: &mut FunctionBuilder) -> IrResult {
         let metadata = var.get();
         let ptr_type = Type::ptr_type();
@@ -436,6 +445,7 @@ impl<M: Module> Compiler<M> {
             ctype,
         })
     }
+
     fn compare(
         left: Value,
         right: Value,
@@ -463,6 +473,7 @@ impl<M: Module> Compiler<M> {
             ctype: left.ctype,
         })
     }
+
     fn assignment(&mut self, lval: Expr, rval: Expr, builder: &mut FunctionBuilder) -> IrResult {
         let ctype = lval.ctype.clone();
         let location = lval.location;
@@ -499,6 +510,7 @@ impl<M: Module> Compiler<M> {
             .store(MemFlags::new(), value.ir_val, target_val, 0);
         Ok(value)
     }
+
     fn call(
         &mut self,
         func: FuncCall,

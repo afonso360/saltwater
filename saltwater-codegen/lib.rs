@@ -11,6 +11,7 @@ macro_rules! semantic_err {
 }
 
 mod expr;
+mod helpers;
 mod static_init;
 mod stmt;
 
@@ -18,13 +19,14 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 
+use crate::helpers::FunctionBuilderExt;
 use cranelift::codegen::{
     self,
     ir::{
         entities::StackSlot,
         function::Function,
         stackslot::{StackSlotData, StackSlotKind},
-        UserFuncName,
+        InstBuilder, UserFuncName,
     },
     isa::TargetIsa,
     settings::{self, Configurable, Flags},
@@ -51,6 +53,7 @@ pub(crate) fn get_isa(jit: bool) -> Box<dyn TargetIsa + 'static> {
             .enable("is_pic")
             .expect("is_pic should be a valid option");
     }
+
     // use debug assertions
     flags_builder
         .enable("enable_verifier")
@@ -112,6 +115,7 @@ impl<M: Module> Compiler<M> {
             debug,
         }
     }
+
     // we have to consider the following cases:
     // 1. declaration before definition
     // 2. 2nd declaration before definition
@@ -148,6 +152,7 @@ impl<M: Module> Compiler<M> {
         self.declarations.insert(symbol, Id::Function(func_id));
         Ok(func_id)
     }
+
     /// declare an object on the stack
     fn declare_stack(
         &mut self,
@@ -248,6 +253,7 @@ impl<M: Module> Compiler<M> {
         }
         Ok(())
     }
+
     fn compile_func(
         &mut self,
         symbol: Symbol,

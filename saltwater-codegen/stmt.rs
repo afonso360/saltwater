@@ -1,3 +1,4 @@
+use crate::helpers::FunctionBuilderExt;
 use cranelift::codegen::cursor::Cursor;
 use cranelift::frontend::Switch;
 use cranelift::prelude::{Block, FunctionBuilder, InstBuilder};
@@ -20,6 +21,7 @@ impl<M: Module> Compiler<M> {
         }
         Ok(())
     }
+
     pub(super) fn compile_stmt(
         &mut self,
         stmt: Stmt,
@@ -92,6 +94,7 @@ impl<M: Module> Compiler<M> {
             StmtType::Default(inner) => self.default(*inner, stmt.location, builder),
         }
     }
+
     fn if_stmt(
         &mut self,
         condition: Expr,
@@ -140,6 +143,7 @@ impl<M: Module> Compiler<M> {
         };
         Ok(())
     }
+
     /// Enter a loop context:
     /// - Create a new start and end block
     /// - Switch to the start block
@@ -154,11 +158,13 @@ impl<M: Module> Compiler<M> {
         builder.switch_to_block(loop_body);
         (loop_body, end_body, old_saw_loop)
     }
+
     /// Exit a loop
     fn exit_loop(&mut self, old_saw_loop: bool) {
         self.loops.pop();
         self.last_saw_loop = old_saw_loop;
     }
+
     fn while_stmt(
         &mut self,
         maybe_condition: Option<Expr>,
@@ -181,11 +187,13 @@ impl<M: Module> Compiler<M> {
         self.exit_loop(old_saw_loop);
         Ok(())
     }
+
     pub(super) fn fallthrough(&self, builder: &mut FunctionBuilder) {
         let bb = builder.create_block();
         builder.ins().jump(bb, &[]);
         builder.switch_to_block(bb);
     }
+
     fn do_loop(
         &mut self,
         body: Stmt,
@@ -208,6 +216,7 @@ impl<M: Module> Compiler<M> {
         self.exit_loop(old_saw_loop);
         Ok(())
     }
+
     fn for_loop(
         &mut self,
         init: Stmt,
@@ -238,6 +247,7 @@ impl<M: Module> Compiler<M> {
         }
         self.while_stmt(condition, body, builder)
     }
+
     fn switch(
         &mut self,
         condition: Expr,
@@ -276,6 +286,7 @@ impl<M: Module> Compiler<M> {
         builder.switch_to_block(end);
         Ok(())
     }
+
     fn case(
         &mut self,
         constexpr: u128,
@@ -303,6 +314,7 @@ impl<M: Module> Compiler<M> {
         };
         self.compile_stmt(stmt, builder)
     }
+
     fn default(
         &mut self,
         inner: Stmt,
@@ -330,6 +342,7 @@ impl<M: Module> Compiler<M> {
             self.compile_stmt(inner, builder)
         }
     }
+
     fn loop_exit(
         &mut self,
         is_break: bool,
@@ -366,6 +379,7 @@ impl<M: Module> Compiler<M> {
             Ok(())
         }
     }
+
     #[inline]
     fn jump_to_block(block: Block, builder: &mut FunctionBuilder) {
         if !builder.is_filled() {
