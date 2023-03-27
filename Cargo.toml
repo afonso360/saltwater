@@ -58,11 +58,11 @@ counter = "^0.5"
 shared_str = "^0.1"
 time = { version = "^0.3", features = ["formatting"] }
 
-cranelift = "0.78"
-cranelift-module = "0.78"
-cranelift-object = "0.78"
-cranelift-codegen = "0.78"
-cranelift-jit = "0.78"
+cranelift = "0.81"
+cranelift-module = "0.81"
+cranelift-object = "0.81"
+cranelift-codegen = "0.81"
+cranelift-jit = "0.81"
 target-lexicon = "0.12"
 
 # Dev Deps

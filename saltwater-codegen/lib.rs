@@ -323,12 +323,7 @@ impl<M: Module> Compiler<M> {
         }
 
         let mut ctx = codegen::Context::for_function(func);
-        let mut trap_sink = codegen::binemit::NullTrapSink {};
-        let mut stack_map_sink = codegen::binemit::NullStackMapSink {};
-        if let Err(err) =
-            self.module
-                .define_function(func_id, &mut ctx, &mut trap_sink, &mut stack_map_sink)
-        {
+        if let Err(err) = self.module.define_function(func_id, &mut ctx) {
             panic!(
                 "definition error: {}\nnote: while compiling {}",
                 err, ctx.func
