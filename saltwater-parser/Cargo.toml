@@ -9,23 +9,23 @@ edition = "2018"
 path = "lib.rs"
 
 [dependencies]
-lazy_static = "1"
-arcstr = "1.1"
-hexponent = "0.3"
+lazy_static = "^1"
+arcstr = "^1.1"
+hexponent = "^0.3"
 thiserror = "^1.0.40"
-lasso = "0.6"
-codespan = { version = ">=0.9.5", default-features = false }
-counter = "0.5"
-shared_str = "0.1.1"
-time = { version = "0.3", features = ["formatting"] }
+lasso = "^0.6"
+codespan = { version = "^0.11", default-features = false }
+counter = "^0.5"
+shared_str = "^0.1"
+time = { version = "^0.3", features = ["formatting"] }
 
 cranelift-codegen = { version = "0.76", optional = true }
 cranelift-object = { version = "0.76", optional = true }
 target-lexicon = "0.12"
 
 [dev-dependencies]
-proptest = "^0.9.6"
-proptest-derive = "0.1"
+proptest = "^1.1"
+proptest-derive = "^0.3"
 
 [features]
 codegen = ["cranelift-codegen", "cranelift-object"]

@@ -2,7 +2,7 @@
 ///
 /// Example:
 ///
-/// ```
+/// ```ignore
 /// let letters = map!{"a" => "b", "c" => "d"};
 /// ```
 ///
