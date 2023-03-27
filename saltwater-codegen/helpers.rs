@@ -28,7 +28,7 @@ impl<'a> FunctionBuilderExt for FunctionBuilder<'a> {
             // If we don't have a last instruction then the block is empty
             None => return false,
         };
-        let opcode = self.func.dfg[last_inst].opcode();
+        let opcode = self.func.dfg.insts[last_inst].opcode();
         opcode.is_terminator()
     }
 
