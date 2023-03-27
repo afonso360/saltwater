@@ -181,7 +181,7 @@ impl<M: Module> Compiler<M> {
             }))
         };
         let data = StackSlotData { kind, size };
-        let stack_slot = builder.create_stack_slot(data);
+        let stack_slot = builder.create_sized_stack_slot(data);
         self.declarations.insert(decl.symbol, Id::Local(stack_slot));
         if let Some(init) = decl.init {
             self.store_stack(init, stack_slot, builder)?;
@@ -243,7 +243,7 @@ impl<M: Module> Compiler<M> {
                 kind: StackSlotKind::ExplicitSlot,
                 size: u32_size,
             };
-            let slot = builder.create_stack_slot(stack_data);
+            let slot = builder.create_sized_stack_slot(stack_data);
             // TODO: need to take the address before storing until Cranelift implements
             // stores for i8 and i16
             // then this can be replaced with `builder.ins().stack_store(ir_val, slot, 0);`
