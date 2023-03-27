@@ -50,6 +50,7 @@ pub struct Lexer {
     error_handler: ErrorHandler<LexError>,
     /// Whether or not to display each token as it is processed
     debug: bool,
+    #[allow(dead_code)]
     given_newline_error: bool,
 }
 

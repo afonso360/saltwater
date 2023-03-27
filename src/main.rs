@@ -309,7 +309,6 @@ fn parse_args() -> Result<(BinOpt, PathBuf), pico_args::Error> {
     while let Some(arg) = input.opt_value_from_str::<_, String>(["-D", "--define"])? {
         use pico_args::Error::ArgumentParsingFailed;
         use saltwater_parser::data::error::LexError;
-        use std::convert::TryInto;
 
         let mut iter = arg.splitn(2, '=');
         let key = iter

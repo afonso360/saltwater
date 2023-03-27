@@ -43,7 +43,6 @@ macro_rules! vec_deque {
 #[macro_export]
 macro_rules! const_assert {
     ($condition:expr) => {
-        #[deny(const_err)]
         #[allow(dead_code)]
         const ASSERT: usize = 0 - !$condition as usize;
     };

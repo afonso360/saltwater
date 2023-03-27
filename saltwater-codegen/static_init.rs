@@ -376,10 +376,7 @@ fn into_bytes(
                 big_endian
             ),
             types::I64 => bytes!(i, big_endian),
-            x => unreachable!(format!(
-                "ir_type {} for integer {} is not of integer type",
-                x, i
-            )),
+            x => unreachable!("ir_type {} for integer {} is not of integer type", x, i),
         }),
         LiteralValue::UnsignedInt(i) => Ok(match ir_type {
             types::I8 => bytes!(
@@ -395,10 +392,7 @@ fn into_bytes(
                 big_endian
             ),
             types::I64 => bytes!(i, big_endian),
-            x => unreachable!(format!(
-                "ir_type {} for integer {} is not of integer type",
-                x, i
-            )),
+            x => unreachable!("ir_type {} for integer {} is not of integer type", x, i),
         }),
         LiteralValue::Float(f) => Ok(match ir_type {
             types::F32 => {
@@ -414,10 +408,7 @@ fn into_bytes(
                 bytes!(float_as_int, big_endian)
             }
             types::F64 => bytes!(f.to_bits(), big_endian),
-            x => unreachable!(format!(
-                "ir_type {} for float {} is not of integer type",
-                x, f
-            )),
+            x => unreachable!("ir_type {} for float {} is not of integer type", x, f),
         }),
         LiteralValue::Str(string) => Ok(string.into_boxed_slice()),
         LiteralValue::Char(c) => Ok(Box::new([c])),

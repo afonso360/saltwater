@@ -1163,6 +1163,7 @@ struct FunctionData {
     /// the name of the function
     id: InternedStr,
     /// where the function was declared
+    #[allow(dead_code)]
     location: Location,
     /// the return type of the function
     return_type: Type,
