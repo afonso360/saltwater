@@ -3,3 +3,4 @@
 /fuzz/afl/inputs
 /fuzz/afl/outputs
 /tests/c-headers
+/a.out
