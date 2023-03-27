@@ -63,6 +63,7 @@ pub(crate) fn get_isa(jit: bool) -> Box<dyn TargetIsa + 'static> {
     cranelift::codegen::isa::lookup(TARGET)
         .unwrap_or_else(|_| panic!("platform not supported: {}", TARGET))
         .finish(flags)
+        .expect("Failed to create target ISA")
 }
 
 pub fn initialize_aot_module(name: String) -> ObjectModule {
