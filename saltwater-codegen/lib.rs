@@ -179,11 +179,7 @@ impl<M: Module> Compiler<M> {
                 location,
             }))
         };
-        let data = StackSlotData {
-            kind,
-            size,
-            offset: None,
-        };
+        let data = StackSlotData { kind, size };
         let stack_slot = builder.create_stack_slot(data);
         self.declarations.insert(decl.symbol, Id::Local(stack_slot));
         if let Some(init) = decl.init {
@@ -245,7 +241,6 @@ impl<M: Module> Compiler<M> {
             let stack_data = StackSlotData {
                 kind: StackSlotKind::ExplicitSlot,
                 size: u32_size,
-                offset: None,
             };
             let slot = builder.create_stack_slot(stack_data);
             // TODO: need to take the address before storing until Cranelift implements
