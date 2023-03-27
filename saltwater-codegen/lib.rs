@@ -37,6 +37,7 @@ use cranelift_module::{self, DataId, FuncId, Linkage, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule, ObjectProduct};
 use saltwater_parser::arch::TARGET;
 use saltwater_parser::{Opt, Program};
+use std::sync::Arc;
 
 use saltwater_parser::data::{
     hir::{Declaration, Initializer, Stmt, Symbol},
@@ -44,7 +45,7 @@ use saltwater_parser::data::{
     StorageClass, *,
 };
 
-pub(crate) fn get_isa(jit: bool) -> Box<dyn TargetIsa + 'static> {
+pub(crate) fn get_isa(jit: bool) -> Arc<dyn TargetIsa + 'static> {
     let mut flags_builder = cranelift::codegen::settings::builder();
     // `simplejit` requires non-PIC code
     if !jit {

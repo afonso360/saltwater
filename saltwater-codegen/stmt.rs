@@ -113,8 +113,9 @@ impl<M: Module> Compiler<M> {
         let (if_body, end_body) = (builder.create_block(), builder.create_block());
         if let Some(other) = otherwise {
             let else_body = builder.create_block();
-            builder.ins().brz(condition.ir_val, else_body, &[]);
-            builder.ins().jump(if_body, &[]);
+            builder
+                .ins()
+                .brif(condition.ir_val, if_body, &[], else_body, &[]);
 
             builder.switch_to_block(if_body);
             self.compile_stmt(body, builder)?;
@@ -132,8 +133,9 @@ impl<M: Module> Compiler<M> {
                 builder.switch_to_block(end_body);
             }
         } else {
-            builder.ins().brz(condition.ir_val, end_body, &[]);
-            builder.ins().jump(if_body, &[]);
+            builder
+                .ins()
+                .brif(condition.ir_val, if_body, &[], end_body, &[]);
 
             builder.switch_to_block(if_body);
             self.compile_stmt(body, builder)?;
@@ -176,8 +178,10 @@ impl<M: Module> Compiler<M> {
         // for loops can loop forever: `for (;;) {}`
         if let Some(condition) = maybe_condition {
             let condition = self.compile_expr(condition, builder)?;
-            builder.ins().brz(condition.ir_val, end_body, &[]);
-            self.fallthrough(builder);
+
+            let bb = builder.create_block();
+            builder.ins().brif(condition.ir_val, bb, &[], end_body, &[]);
+            builder.switch_to_block(bb);
         }
 
         self.compile_stmt(body, builder)?;
@@ -186,12 +190,6 @@ impl<M: Module> Compiler<M> {
         builder.switch_to_block(end_body);
         self.exit_loop(old_saw_loop);
         Ok(())
-    }
-
-    pub(super) fn fallthrough(&self, builder: &mut FunctionBuilder) {
-        let bb = builder.create_block();
-        builder.ins().jump(bb, &[]);
-        builder.switch_to_block(bb);
     }
 
     fn do_loop(
@@ -209,8 +207,9 @@ impl<M: Module> Compiler<M> {
                 .error(SemanticError::UnreachableStatement));
         }
         let condition = self.compile_expr(condition, builder)?;
-        builder.ins().brz(condition.ir_val, end_body, &[]);
-        Self::jump_to_block(loop_body, builder);
+        builder
+            .ins()
+            .brif(condition.ir_val, loop_body, &[], end_body, &[]);
 
         builder.switch_to_block(end_body);
         self.exit_loop(old_saw_loop);

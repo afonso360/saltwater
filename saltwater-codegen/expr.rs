@@ -63,13 +63,27 @@ impl<M: Module> Compiler<M> {
                     _ => unreachable!("parser should catch illegal types"),
                 },
             ),
-            // binary operators
-            ExprType::Binary(BinaryOp::LogicalOr, left, right) => {
-                self.logical_expr(*left, *right, false, builder)
-            }
-            ExprType::Binary(BinaryOp::LogicalAnd, left, right) => {
-                self.logical_expr(*left, *right, true, builder)
-            }
+            // // binary operators
+            // ExprType::Binary(BinaryOp::LogicalOr, left, right) => {
+            //     let left = self.compile_expr(*left, builder)?;
+            //     let right = self.compile_expr(*right, builder)?;
+            //     let res = builder.ins().bor(left.ir_val, right.ir_val);
+            //     Ok(Value {
+            //         ir_val: res,
+            //         ir_type: types::I8,
+            //         ctype: Type::Bool,
+            //     })
+            // }
+            // ExprType::Binary(BinaryOp::LogicalAnd, left, right) => {
+            //     let left = self.compile_expr(*left, builder)?;
+            //     let right = self.compile_expr(*right, builder)?;
+            //     let res = builder.ins().band(left.ir_val, right.ir_val);
+            //     Ok(Value {
+            //         ir_val: res,
+            //         ir_type: types::I8,
+            //         ctype: Type::Bool,
+            //     })
+            // }
             ExprType::Binary(BinaryOp::Assign, left, right) => {
                 self.assignment(*left, *right, builder)
             }
@@ -157,8 +171,9 @@ impl<M: Module> Compiler<M> {
 
         let condition = self.compile_expr(condition, builder)?;
         let (block_if_true, block_if_false) = (builder.create_block(), builder.create_block());
-        builder.ins().brnz(condition.ir_val, block_if_true, &[]);
-        builder.ins().jump(block_if_false, &[]);
+        builder
+            .ins()
+            .brif(condition.ir_val, block_if_true, &[], block_if_false, &[]);
 
         builder.switch_to_block(block_if_true);
         let left_val = self.compile_expr(left, builder)?;
@@ -173,39 +188,6 @@ impl<M: Module> Compiler<M> {
             ir_val: *builder.block_params(target_block).first().unwrap(),
             ir_type: target_type,
             ctype: left_val.ctype,
-        })
-    }
-
-    fn logical_expr(
-        &mut self,
-        left: Expr,
-        right: Expr,
-        brz: bool,
-        builder: &mut FunctionBuilder,
-    ) -> IrResult {
-        let target_block = builder.create_block();
-        builder.append_block_param(target_block, types::I8);
-        let left = self.compile_expr(left, builder)?;
-
-        let branch_func = if brz {
-            InstBuilder::brz
-        } else {
-            InstBuilder::brnz
-        };
-        branch_func(builder.ins(), left.ir_val, target_block, &[left.ir_val]);
-        self.fallthrough(builder);
-
-        let right = self.compile_expr(right, builder)?;
-        builder.ins().jump(target_block, &[right.ir_val]);
-
-        builder.switch_to_block(target_block);
-        Ok(Value {
-            ir_val: *builder
-                .block_params(target_block)
-                .first()
-                .expect("if we passed an block arg it should be here"),
-            ir_type: types::I8,
-            ctype: Type::Bool,
         })
     }
 
@@ -292,6 +274,8 @@ impl<M: Module> Compiler<M> {
             (Mod, ty, false) if ty.is_int() => b::urem,
             (BitwiseAnd, ty, _) if ty.is_int() => b::band,
             (BitwiseOr, ty, _) if ty.is_int() => b::bor,
+            (LogicalAnd, ty, _) if ty.is_int() => b::band,
+            (LogicalOr, ty, _) if ty.is_int() => b::bor,
             (Shl, ty, _) if ty.is_int() => b::ishl,
             // arithmetic shift: keeps the sign of `left`
             (Shr, ty, true) if ty.is_int() => b::sshr,
