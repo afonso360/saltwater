@@ -21,14 +21,14 @@ default-run = "swcc"
 documentation = "https://docs.rs/saltwater"
 
 [dependencies]
-ansi_term = "^0.12"
-arcstr = "^1.1"
-tempfile = "^3.4"
-pico-args = { version = "^0.4", features = ["short-space-opt"] }
-color-backtrace = { version = "^0.5", default-features = false, optional = true }
-atty = { version = "^0.2", default-features = false }
-saltwater-parser = { path = "saltwater-parser", version = "0.11.0" }
-saltwater-codegen = { path = "saltwater-codegen", version = "0.11.0" }
+ansi_term = { workspace = true }
+arcstr = { workspace = true }
+tempfile = { workspace = true }
+pico-args = { workspace = true }
+color-backtrace = { workspace = true, optional = true }
+atty = { workspace = true }
+saltwater-parser = { path = "saltwater-parser" }
+saltwater-codegen = { path = "saltwater-codegen" }
 
 [features]
 default = ["color-backtrace"]
@@ -37,6 +37,37 @@ jit = ["saltwater-codegen/jit"]
 _test_headers = []
 
 [workspace]
+members = [
+  "saltwater-parser",
+  "saltwater-codegen",
+]
+
+[workspace.dependencies]
+lazy_static = "^1"
+thiserror = "^1.0.40"
+ansi_term = "^0.12"
+arcstr = "^1.1"
+tempfile = "^3.4"
+pico-args = { version = "^0.4", features = ["short-space-opt"] }
+color-backtrace = { version = "^0.5", default-features = false }
+atty = { version = "^0.2", default-features = false }
+hexponent = "^0.3"
+lasso = "^0.6"
+codespan = { version = "^0.11", default-features = false }
+counter = "^0.5"
+shared_str = "^0.1"
+time = { version = "^0.3", features = ["formatting"] }
+
+cranelift = "0.76"
+cranelift-module = "0.76"
+cranelift-object = "0.76"
+cranelift-codegen = "0.76"
+cranelift-jit = "0.76"
+target-lexicon = "0.12"
+
+# Dev Deps
+proptest = "^1.1"
+proptest-derive = "^0.3"
 
 [[bin]]
 name = "swcc"

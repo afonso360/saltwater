@@ -4,28 +4,27 @@ version = "0.11.0"
 authors = ["Joshua Nelson <jyn514@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 path = "lib.rs"
 
 [dependencies]
-lazy_static = "^1"
-arcstr = "^1.1"
-hexponent = "^0.3"
-thiserror = "^1.0.40"
-lasso = "^0.6"
-codespan = { version = "^0.11", default-features = false }
-counter = "^0.5"
-shared_str = "^0.1"
-time = { version = "^0.3", features = ["formatting"] }
+lazy_static = { workspace = true }
+arcstr = { workspace = true }
+hexponent = { workspace = true }
+thiserror = { workspace = true }
+lasso = { workspace = true }
+codespan = { workspace = true, default-features = false }
+counter = { workspace = true }
+shared_str = { workspace = true }
+time = { workspace = true }
 
-cranelift-codegen = { version = "0.76", optional = true }
-cranelift-object = { version = "0.76", optional = true }
-target-lexicon = "0.12"
+cranelift-codegen = { workspace = true, optional = true }
+cranelift-object = { workspace = true, optional = true }
+target-lexicon = { workspace = true }
 
 [dev-dependencies]
-proptest = "^1.1"
-proptest-derive = "^0.3"
+proptest = { workspace = true }
+proptest-derive = { workspace = true }
 
 [features]
 codegen = ["cranelift-codegen", "cranelift-object"]
