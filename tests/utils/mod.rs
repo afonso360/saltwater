@@ -2,11 +2,10 @@
 
 extern crate tempfile;
 
-use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
 use saltwater_codegen::{assemble, initialize_aot_module, link};
 use saltwater_parser::{Error, Opt};
-
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
 
 pub fn cpp() -> std::process::Command {
     let mut cpp = std::process::Command::new("cpp");
@@ -164,7 +163,6 @@ pub fn assert_num_errs<S: AsRef<str>>(program: S, path: PathBuf, n: usize) {
         _ => panic!("program should have an error"),
     }
 }
-
 
 pub fn assert_stack_overflow(_program: &str, path: PathBuf) {
     // We have to call the compiler as an external program since we can't catch stack overflows

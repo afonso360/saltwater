@@ -25,10 +25,7 @@ fn main() {
     drop(Command::new("rustfmt").arg(&output).status());
 }
 
-fn build_tests_for_dir(
-    out: &mut String,
-    path: impl AsRef<Path>,
-) {
+fn build_tests_for_dir(out: &mut String, path: impl AsRef<Path>) {
     let path = path.as_ref();
     let modname = extract_name(path);
 
@@ -48,7 +45,6 @@ fn build_tests_for_dir(
                     return None;
                 }
             };
-
 
             // Ignore files starting with `.`, which could be editor temporary files
             if p.file_stem()?.to_str()?.starts_with(".") {
@@ -71,26 +67,26 @@ fn build_tests_for_dir(
     out.push_str("}\n");
 }
 
-
-fn build_test(
-    out: &mut String,
-    path: impl AsRef<Path>,
-) {
+fn build_test(out: &mut String, path: impl AsRef<Path>) {
     let path = path.as_ref();
     let testname = extract_name(path);
 
-
     writeln!(out, "#[test]").unwrap();
     writeln!(out, "fn r#{}() {{", &testname).unwrap();
-    writeln!(out,"    crate::run_test(r#\"{}\"#).unwrap();", path.display()).unwrap();
+    writeln!(
+        out,
+        "    crate::run_test(r#\"{}\"#).unwrap();",
+        path.display()
+    )
+    .unwrap();
     writeln!(out, "}}").unwrap();
     writeln!(out).unwrap();
 }
 
-
 /// Extract a valid Rust identifier from the stem of a path.
 fn extract_name(path: impl AsRef<Path>) -> String {
-    let mut name = path.as_ref()
+    let mut name = path
+        .as_ref()
         .file_stem()
         .expect("filename should have a stem")
         .to_str()

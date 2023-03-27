@@ -338,8 +338,7 @@ fn parse_args() -> Result<(BinOpt, PathBuf), pico_args::Error> {
             search_path,
             // This is a little odd because `free` expects no arguments to be left,
             // so we have to parse it last.
-            filename: input
-                .free_from_fn(str_to_path_buf)?
+            filename: input.free_from_fn(str_to_path_buf)?,
         },
         color: color_choice,
     };

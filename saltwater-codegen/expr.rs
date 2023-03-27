@@ -488,7 +488,7 @@ impl<M: Module> Compiler<M> {
                 // could be overlapping: `s = s;`
                 false,
                 // We don't know anything about this access
-                MemFlags::new()
+                MemFlags::new(),
             );
             return Ok(value);
         }

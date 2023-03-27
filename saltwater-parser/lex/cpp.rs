@@ -260,8 +260,10 @@ impl Iterator for PreProcessor<'_> {
 
 type TimeFmtDescription<'a> = Vec<format_description::FormatItem<'a>>;
 lazy_static! {
-    static ref DATE_FMT: TimeFmtDescription<'static> = format_description::parse("[month repr:short] [day padding:space] [year]").unwrap();
-    static ref TIME_FMT: TimeFmtDescription<'static> = format_description::parse("[hour]:[minute]:[second]").unwrap();
+    static ref DATE_FMT: TimeFmtDescription<'static> =
+        format_description::parse("[month repr:short] [day padding:space] [year]").unwrap();
+    static ref TIME_FMT: TimeFmtDescription<'static> =
+        format_description::parse("[hour]:[minute]:[second]").unwrap();
 }
 
 // idiom: to check if there has been a newline since the last token,

@@ -3,9 +3,7 @@ use std::path::{Path, PathBuf};
 
 mod utils;
 
-
 include!(concat!(env!("OUT_DIR"), "/runtests_tests.rs"));
-
 
 fn run_test(path: &str) -> Result<(), io::Error> {
     let path = Path::new(path);
@@ -35,8 +33,8 @@ fn run_test(path: &str) -> Result<(), io::Error> {
             // let p: String = path;
             println!("WARNING: Ignored test {}", path.to_str().unwrap());
             // panic!("ignored tests should have an associated issue")
-            return Ok(())
-        },
+            return Ok(());
+        }
         // `code: x` - it should compile, run, and exit with code x
         // NOTE: x should not be negative
         // NOTE: x should be less than 256 since Linux only has 8-bit exit codes
@@ -60,9 +58,7 @@ fn run_test(path: &str) -> Result<(), io::Error> {
             return Ok(());
         }
         line if line.starts_with("// ignore: ") => {
-            let url = line
-                .trim_start_matches("// ignore: ")
-                .trim();
+            let url = line.trim_start_matches("// ignore: ").trim();
             assert!(
                 url.starts_with("https://") || url.starts_with("http://"),
                 "ignored tests should have an associated issue"
@@ -76,7 +72,6 @@ fn run_test(path: &str) -> Result<(), io::Error> {
             //     .trim_start_matches("// output: ")
             //     .trim();
             return output_test(&line["// output: ".len()..], &mut reader, &program, path);
-
         }
         line => panic!("Unrecognized test: {}", line),
     };
