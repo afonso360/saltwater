@@ -156,7 +156,7 @@ mod codegen_impls {
 
             match self {
                 // Integers
-                Bool => types::B1,
+                Bool => types::I8,
                 Char(_) | Short(_) | Int(_) | Long(_) | Pointer(_, _) | Enum(_, _) => {
                     let int_size = SIZE_T::from(CHAR_BIT)
                         * self

@@ -1,5 +1,5 @@
-use cranelift::codegen::ir::{condcodes, types, MemFlags};
-use cranelift::prelude::{FunctionBuilder, InstBuilder, Type as IrType, Value as IrValue};
+use cranelift::codegen::ir::{types, MemFlags};
+use cranelift::prelude::{FunctionBuilder, InstBuilder, IntCC, Type as IrType, Value as IrValue};
 use cranelift_module::Module;
 
 use super::{Compiler, Id};
@@ -184,7 +184,7 @@ impl<M: Module> Compiler<M> {
         builder: &mut FunctionBuilder,
     ) -> IrResult {
         let target_block = builder.create_block();
-        builder.append_block_param(target_block, types::B1);
+        builder.append_block_param(target_block, types::I8);
         let left = self.compile_expr(left, builder)?;
 
         let branch_func = if brz {
@@ -204,7 +204,7 @@ impl<M: Module> Compiler<M> {
                 .block_params(target_block)
                 .first()
                 .expect("if we passed an block arg it should be here"),
-            ir_type: types::B1,
+            ir_type: types::I8,
             ctype: Type::Bool,
         })
     }
@@ -218,9 +218,7 @@ impl<M: Module> Compiler<M> {
         builder: &mut FunctionBuilder,
     ) -> IrResult {
         let ir_val = match (token, ir_type) {
-            (LiteralValue::Int(i), types::B1) => builder.ins().bconst(ir_type, i != 0),
             (LiteralValue::Int(i), _) => builder.ins().iconst(ir_type, i),
-            (LiteralValue::UnsignedInt(u), types::B1) => builder.ins().bconst(ir_type, u != 0),
             (LiteralValue::UnsignedInt(u), _) => builder.ins().iconst(ir_type, u as i64),
             (LiteralValue::Float(f), types::F32) => builder.ins().f32const(f as f32),
             (LiteralValue::Float(f), types::F64) => builder.ins().f64const(f),
@@ -292,8 +290,8 @@ impl<M: Module> Compiler<M> {
             (Div, ty, _) if ty.is_float() => b::fdiv,
             (Mod, ty, true) if ty.is_int() => b::srem,
             (Mod, ty, false) if ty.is_int() => b::urem,
-            (BitwiseAnd, ty, _) if ty.is_int() || ty.is_bool() => b::band,
-            (BitwiseOr, ty, _) if ty.is_int() || ty.is_bool() => b::bor,
+            (BitwiseAnd, ty, _) if ty.is_int() => b::band,
+            (BitwiseOr, ty, _) if ty.is_int() => b::bor,
             (Shl, ty, _) if ty.is_int() => b::ishl,
             // arithmetic shift: keeps the sign of `left`
             (Shr, ty, true) if ty.is_int() => b::sshr,
@@ -321,24 +319,37 @@ impl<M: Module> Compiler<M> {
         // calculate this here before it's moved to `compile_expr`
         let orig_signed = expr.ctype.is_signed();
         let original = self.compile_expr(expr, builder)?;
-        if ctype == Type::Void {
-            // this cast is a no-op, it's just here for the frontend
-            return Ok(original);
-        }
         let cast_type = ctype.as_ir_type();
-        let cast = Self::cast_ir(
-            original.ir_type,
-            cast_type,
-            original.ir_val,
-            orig_signed,
-            ctype.is_signed(),
-            builder,
-        );
-        Ok(Value {
-            ir_val: cast,
-            ir_type: cast_type,
-            ctype,
-        })
+
+        match (&original.ctype, ctype) {
+            // this cast is a no-op, it's just here for the frontend
+            (_, Type::Void) => Ok(original),
+            // Bools are represented by i8, but only allow 1 bit to be set
+            (from, ctype @ Type::Bool) => {
+                let zero = builder.ins().iconst(from.as_ir_type(), 0);
+                let ir_val = builder.ins().icmp(IntCC::NotEqual, original.ir_val, zero);
+                Ok(Value {
+                    ir_val,
+                    ir_type: cast_type,
+                    ctype,
+                })
+            }
+            (_, ctype) => {
+                let cast = Self::cast_ir(
+                    original.ir_type,
+                    cast_type,
+                    original.ir_val,
+                    orig_signed,
+                    ctype.is_signed(),
+                    builder,
+                );
+                Ok(Value {
+                    ir_val: cast,
+                    ir_type: cast_type,
+                    ctype,
+                })
+            }
+        }
     }
 
     fn cast_ir(
@@ -360,10 +371,6 @@ impl<M: Module> Compiler<M> {
             (types::F32, types::F64) => builder.ins().fpromote(to, val),
             (types::F64, types::F32) => builder.ins().fdemote(to, val),
             // narrowing and widening integer conversions
-            (b, i) if b.is_bool() && i.is_int() => builder.ins().bint(to, val),
-            (i, b) if i.is_int() && b.is_bool() => {
-                builder.ins().icmp_imm(condcodes::IntCC::NotEqual, val, 0)
-            }
             (big_int, small_int)
                 if big_int.is_int()
                     && small_int.is_int()
@@ -396,17 +403,6 @@ impl<M: Module> Compiler<M> {
                 } else {
                     builder.ins().fcvt_to_uint(to, val)
                 }
-            }
-            // bool/float conversions
-            // cranelift doesn't seem to have a builtin way to do this
-            // instead, this converts from bool to signed int and then int to float
-            (b, f) if b.is_bool() && f.is_float() => {
-                let int_val = Self::cast_ir(b, types::I32, val, false, true, builder);
-                Self::cast_ir(types::I8, f, int_val, true, true, builder)
-            }
-            (f, b) if b.is_bool() && f.is_float() => {
-                let int_val = Self::cast_ir(f, types::I32, val, true, true, builder);
-                Self::cast_ir(types::I8, b, int_val, true, false, builder)
             }
             _ => unreachable!("cast from {} to {}", from, to),
         }
@@ -457,11 +453,6 @@ impl<M: Module> Compiler<M> {
         let ir_val = if left.ir_type.is_int() {
             let code = token.to_int_compare(left.ctype.is_signed());
             builder.ins().icmp(code, left.ir_val, right.ir_val)
-        } else if left.ir_type.is_bool() {
-            let left = builder.ins().bint(types::I8, left.ir_val);
-            let right = builder.ins().bint(types::I8, right.ir_val);
-            let code = token.to_int_compare(false);
-            builder.ins().icmp(code, left, right)
         } else {
             assert!(left.ir_type.is_float());
             let code = token.to_float_compare();
@@ -469,7 +460,7 @@ impl<M: Module> Compiler<M> {
         };
         Ok(Value {
             ir_val,
-            ir_type: types::B1,
+            ir_type: types::I8,
             ctype: left.ctype,
         })
     }
