@@ -411,7 +411,7 @@ impl<M: Module> Compiler<M> {
             _ => unreachable!("parser should catch illegal types"),
         })
     }
-    fn load_addr(&self, var: Symbol, builder: &mut FunctionBuilder) -> IrResult {
+    fn load_addr(&mut self, var: Symbol, builder: &mut FunctionBuilder) -> IrResult {
         let metadata = var.get();
         let ptr_type = Type::ptr_type();
         let ir_val = match self

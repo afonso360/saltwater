@@ -24,7 +24,7 @@ use cranelift::codegen::{
         entities::StackSlot,
         function::Function,
         stackslot::{StackSlotData, StackSlotKind},
-        ExternalName, InstBuilder,
+        UserFuncName,
     },
     isa::TargetIsa,
     settings::{self, Configurable, Flags},
@@ -262,7 +262,7 @@ impl<M: Module> Compiler<M> {
 
         // external name is meant to be a lookup in a symbol table,
         // but we just give it garbage values
-        let mut func = Function::with_name_signature(ExternalName::user(0, 0), signature);
+        let mut func = Function::with_name_signature(UserFuncName::user(0, 0), signature);
 
         // this context is just boiler plate
         let mut ctx = FunctionBuilderContext::new();
