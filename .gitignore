@@ -4,3 +4,4 @@
 /fuzz/afl/outputs
 /tests/c-headers
 /a.out
+/*.c
