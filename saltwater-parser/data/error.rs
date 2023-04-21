@@ -512,7 +512,7 @@ pub enum CppError {
     HashHashMissingParameter(bool),
 
     /// The result of '##' is not a valid token
-    #[error("pasting formed '{0}{1}', an invalid preprocessing token")]
+    #[error("token pasting formed '{0}{1}', an invalid preprocessing token")]
     HashHashInvalid(Token, Token),
 }
 

@@ -245,7 +245,7 @@ pub fn replace(
                 }
             }
             Ok(Locatable {
-                data: Token::HashHash(true),
+                data: Token::HashHash { operator: true },
                 ..
             }) => {
                 let preceding_tok = loop {
@@ -255,7 +255,8 @@ pub fn replace(
                             ..
                         })) => continue,
                         Some(Ok(Locatable { data: token, .. })) => break token,
-                        None | Some(Err(_)) => {
+                        Some(Err(e)) => return vec![Err(e)],
+                        None => {
                             return wrap_error(&location, CppError::HashHashMissingParameter(true))
                         }
                     }
@@ -494,9 +495,9 @@ fn concat(x: &Token, y: &Token, location: &Location) -> Option<Locatable<Token>>
     match lexer.next() {
         Some(Ok(tok)) if lexer.next().is_none() => Some(match tok {
             Locatable {
-                data: Token::HashHash(_),
+                data: Token::HashHash { .. },
                 location,
-            } => location.with(Token::HashHash(false)),
+            } => location.with(Token::HashHash { operator: false }),
             tok => tok,
         }),
         _ => None,

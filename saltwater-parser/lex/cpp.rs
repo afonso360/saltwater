@@ -1875,7 +1875,7 @@ h",
         );
         assert_same(
             "
-            
+
             #if __LINE__ == 3
             1
             #endif",
@@ -1883,8 +1883,8 @@ h",
         );
         assert_same(
             "#define LINE __LINE__
-            
-            
+
+
             LINE",
             "4",
         );
@@ -1970,7 +1970,7 @@ h",
         assert_concat("+", "+", Some(PlusPlus));
         assert_concat(">>", "=", Some(Assignment(ShrEqual)));
         assert_concat(">", "=", Some(Comparison(GreaterEqual)));
-        assert_concat("#", "#", Some(HashHash(false)));
+        assert_concat("#", "#", Some(HashHash { operator: false }));
         assert_concat("-", ">", Some(StructDeref));
         assert_concat("const", "ance", Some(Id("constance".into())));
         assert_concat("xyz", "123", Some(Id("xyz123".into())));
@@ -1986,6 +1986,7 @@ h",
         assert_concat("0b1", "6", None);
         assert_concat("/", "/", None); // Not a comment
     }
+
     #[test]
     #[ignore] // Related to https://github.com/jyn514/saltwater/issues/513
     fn hash_and_hashhash() {
@@ -1997,5 +1998,19 @@ h",
              join(x, y);",
             r#""X ## Y""#,
         );
+    }
+
+    #[test]
+    fn gnu_weirdness() {
+        // #506
+        let program = "
+#define __GLIBC_USE(F)	__GLIBC_USE_ ## F
+# define __GLIBC_USE_IEC_60559_TYPES_EXT 1
+# define __GLIBC_USE_ISOC2X 1
+#if __GLIBC_USE (IEC_60559_BFP_EXT) || __GLIBC_USE (ISOC2X)
+	int main() {}
+#endif
+        ";
+        assert_same(program, "int main() {}");
     }
 }
