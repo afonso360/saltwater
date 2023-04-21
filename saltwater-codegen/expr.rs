@@ -63,27 +63,6 @@ impl<M: Module> Compiler<M> {
                     _ => unreachable!("parser should catch illegal types"),
                 },
             ),
-            // // binary operators
-            // ExprType::Binary(BinaryOp::LogicalOr, left, right) => {
-            //     let left = self.compile_expr(*left, builder)?;
-            //     let right = self.compile_expr(*right, builder)?;
-            //     let res = builder.ins().bor(left.ir_val, right.ir_val);
-            //     Ok(Value {
-            //         ir_val: res,
-            //         ir_type: types::I8,
-            //         ctype: Type::Bool,
-            //     })
-            // }
-            // ExprType::Binary(BinaryOp::LogicalAnd, left, right) => {
-            //     let left = self.compile_expr(*left, builder)?;
-            //     let right = self.compile_expr(*right, builder)?;
-            //     let res = builder.ins().band(left.ir_val, right.ir_val);
-            //     Ok(Value {
-            //         ir_val: res,
-            //         ir_type: types::I8,
-            //         ctype: Type::Bool,
-            //     })
-            // }
             ExprType::Binary(BinaryOp::Assign, left, right) => {
                 self.assignment(*left, *right, builder)
             }
