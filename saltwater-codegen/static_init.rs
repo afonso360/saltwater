@@ -4,7 +4,7 @@
 use std::convert::{TryFrom, TryInto};
 
 use cranelift::codegen::ir::types;
-use cranelift_module::{DataContext, DataId, Linkage, Module};
+use cranelift_module::{DataDescription, DataId, Linkage, Module};
 
 use super::{Compiler, Id};
 use saltwater_parser::arch::{PTR_SIZE, TARGET};
@@ -95,7 +95,7 @@ impl<M: Module> Compiler<M> {
             return Ok(());
         }
 
-        let mut ctx = DataContext::new();
+        let mut ctx = DataDescription::new();
         // TODO: all of this should happen in the `analyze` module
         if let Some(init) = init {
             let mut ctype = metadata.ctype.clone();
@@ -163,7 +163,7 @@ impl<M: Module> Compiler<M> {
                 (string, id)
             }
         };
-        let mut ctx = DataContext::new();
+        let mut ctx = DataDescription::new();
         ctx.define(string.into_boxed_slice());
         self.module
             .define_data(str_id, &ctx)
@@ -176,7 +176,7 @@ impl<M: Module> Compiler<M> {
 
     fn init_expr(
         &mut self,
-        ctx: &mut DataContext,
+        ctx: &mut DataDescription,
         buf: &mut [u8],
         offset: u32,
         expr: Expr,
@@ -222,7 +222,13 @@ impl<M: Module> Compiler<M> {
         Ok(())
     }
 
-    fn static_ref(&self, symbol: Symbol, member_offset: i64, offset: u32, ctx: &mut DataContext) {
+    fn static_ref(
+        &self,
+        symbol: Symbol,
+        member_offset: i64,
+        offset: u32,
+        ctx: &mut DataDescription,
+    ) {
         match self.declarations.get(&symbol) {
             Some(Id::Function(func_id)) => {
                 let func_ref = self.module.declare_func_in_data(*func_id, ctx);
@@ -240,7 +246,7 @@ impl<M: Module> Compiler<M> {
 
     fn init_symbol(
         &mut self,
-        ctx: &mut DataContext,
+        ctx: &mut DataDescription,
         buf: &mut [u8],
         mut offset: u32,
         initializer: Initializer,
@@ -312,7 +318,7 @@ impl<M: Module> Compiler<M> {
 
     fn init_array(
         &mut self,
-        ctx: &mut DataContext,
+        ctx: &mut DataDescription,
         buf: &mut [u8],
         mut offset: u32,
         initializers: Vec<Initializer>,
